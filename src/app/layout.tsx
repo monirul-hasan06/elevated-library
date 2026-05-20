@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
+
 import { LanguageThemeProvider } from "@/components/shared/language-theme-provider";
 import { Header } from "@/components/public/header";
 import { Footer } from "@/components/public/footer";
 import { SupportButton } from "@/components/public/support-button";
 import { NoticeBar } from "@/components/public/notice-bar";
-import { getActiveNotices, getSiteSettings } from "@/lib/db";
+import { getSiteSettings } from "@/lib/db";
 
-export const metadata = {
+export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
   ),
@@ -60,14 +61,28 @@ export const metadata = {
   manifest: "/site.webmanifest",
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const settings = await getSiteSettings();
-  const notices = await getActiveNotices("top_bar");
+
+  const welcomeNotice = settings?.welcome_notice_enabled
+    ? {
+        title_bn: settings?.welcome_notice_bn || "Welcome to Elevated Library!",
+        title_en: settings?.welcome_notice_en || "Welcome to Elevated Library!",
+        message_bn: "",
+        message_en: "",
+        closable: true,
+      }
+    : null;
+
   return (
     <html lang="bn" suppressHydrationWarning>
       <body>
         <LanguageThemeProvider>
-          <NoticeBar notice={notices?.[0]} />
+          <NoticeBar notice={welcomeNotice} />
           <Header siteName={settings?.site_name || "Elevated Library"} />
           {children}
           <Footer settings={settings as any} />

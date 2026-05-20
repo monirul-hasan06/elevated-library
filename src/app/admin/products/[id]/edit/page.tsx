@@ -1,0 +1,3 @@
+import { ProductForm } from "@/components/admin/product-form";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+export default async function EditProductPage({params}:{params:{id:string}}){ const supabase=createSupabaseAdminClient(); const [{data:product},{data:categories},{data:pcs}]=await Promise.all([supabase.from('products').select('*').eq('id',params.id).single(),supabase.from('categories').select('*').neq('status','deleted').order('sort_order'),supabase.from('product_categories').select('category_id').eq('product_id',params.id)]); return <div><h1 className="text-3xl font-black">Edit Product</h1><ProductForm product={product} categories={categories||[]} selectedCategories={(pcs||[]).map((x:any)=>x.category_id)} /></div> }

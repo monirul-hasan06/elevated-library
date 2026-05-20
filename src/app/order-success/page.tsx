@@ -1,0 +1,1 @@
+export default function Page(){return <main className="container-page py-16"><div className="card p-8"><h1 className="text-3xl font-black">Order Submitted</h1><p className="mt-3 text-slate-600">Admin verification-এর পর download access পাবেন।</p></div></main>}

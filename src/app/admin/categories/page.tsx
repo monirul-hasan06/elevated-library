@@ -1,0 +1,3 @@
+import { SimpleCrud } from "@/components/admin/simple-crud";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+export default async function Page(){const {data}=await createSupabaseAdminClient().from('categories').select('*').neq('status','deleted').order('sort_order'); return <SimpleCrud title="Categories" resource="categories" rows={data||[]} fields={[{key:'name_bn',label:'Name BN'},{key:'name_en',label:'Name EN'},{key:'slug',label:'Slug'},{key:'description_bn',label:'Description BN',type:'textarea'},{key:'description_en',label:'Description EN',type:'textarea'},{key:'sort_order',label:'Sort Order',type:'number'},{key:'status',label:'Status',type:'select',options:['active','hidden','archived','deleted']}]} />}

@@ -437,7 +437,7 @@ insert into public.faqs (question_bn, answer_bn, question_en, answer_en, categor
 on conflict do nothing;
 
 insert into public.notices (title_bn,message_bn,title_en,message_en,type,position,status) values
-('Welcome to Elevated Library','Premium self-growth PDF library এখন তৈরি হচ্ছে।','Welcome to Elevated Library','Your premium self-growth PDF library is being prepared.','info','top_bar','active')
+('Welcome to Elevated Library','Premium self-growth PDF library','Welcome to Elevated Library','Your premium self-growth PDF library.','info','top_bar','active')
 on conflict do nothing;
 
 insert into public.static_pages (slug,title_bn,title_en,body_bn,body_en) values

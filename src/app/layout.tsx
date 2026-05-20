@@ -8,8 +8,44 @@ import { NoticeBar } from "@/components/public/notice-bar";
 import { getActiveNotices, getSiteSettings } from "@/lib/db";
 
 export const metadata = {
-  title: "Elevated Library",
-  description: "Premium PDF library for Bangladeshi learners",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
+  title: {
+    default: "Elevated Library",
+    template: "%s | Elevated Library",
+  },
+  description:
+    "Elevated Library is a premium Bangla-English PDF library for mindset, confidence, communication, relationship, discipline and self-growth resources.",
+  keywords: [
+    "Elevated Library",
+    "Bangla PDF",
+    "Self improvement PDF",
+    "Mindset PDF",
+    "Confidence PDF",
+    "Communication PDF",
+    "Relationship PDF",
+    "Discipline PDF",
+    "Bangladesh PDF store",
+  ],
+  authors: [{ name: "Elevated Library" }],
+  creator: "Elevated Library",
+  publisher: "Elevated Library",
+  openGraph: {
+    title: "Elevated Library",
+    description:
+      "Premium Bangla-English PDFs for self-growth, mindset, confidence, communication and discipline.",
+    url: "/",
+    siteName: "Elevated Library",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Elevated Library",
+    description:
+      "Premium Bangla-English PDFs for self-growth and personal development.",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico" },

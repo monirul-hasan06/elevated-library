@@ -7,9 +7,21 @@ import { SupportButton } from "@/components/public/support-button";
 import { NoticeBar } from "@/components/public/notice-bar";
 import { getActiveNotices, getSiteSettings } from "@/lib/db";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Elevated Library",
-  description: "Premium Bangla-English PDF library for self-growth, mindset, confidence, communication, relationship and discipline."
+  description: "Premium PDF library for Bangladeshi learners",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-64.png", sizes: "64x64", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

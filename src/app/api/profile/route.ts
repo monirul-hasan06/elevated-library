@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const profileSchema = z.object({
   full_name: z.string().trim().max(100).optional().nullable(),
@@ -12,15 +14,43 @@ const profileSchema = z.object({
   avatar_url: z.string().trim().url().optional().or(z.literal("")).nullable(),
 });
 
-export async function GET() {
+async function getCurrentUserId(request: Request) {
+  const admin = createSupabaseAdminClient();
+
+  const authHeader = request.headers.get("authorization");
+  const bearerToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length)
+    : null;
+
+  if (bearerToken) {
+    const {
+      data: { user },
+      error,
+    } = await admin.auth.getUser(bearerToken);
+
+    if (!error && user) {
+      return user.id;
+    }
+  }
+
   const supabase = createSupabaseServerClient();
 
   const {
     data: { user },
-    error: userError,
+    error,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
+  if (!error && user) {
+    return user.id;
+  }
+
+  return null;
+}
+
+export async function GET(request: Request) {
+  const userId = await getCurrentUserId(request);
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -28,8 +58,10 @@ export async function GET() {
 
   const { data: profile, error } = await admin
     .from("profiles")
-    .select("id, email, role, status, full_name, phone, bio, avatar_url, created_at, updated_at")
-    .eq("id", user.id)
+    .select(
+      "id, email, role, status, full_name, phone, bio, avatar_url, created_at, updated_at"
+    )
+    .eq("id", userId)
     .single();
 
   if (error || !profile) {
@@ -43,14 +75,9 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = createSupabaseServerClient();
+  const userId = await getCurrentUserId(request);
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -75,8 +102,10 @@ export async function PATCH(request: Request) {
       avatar_url: parsed.data.avatar_url || null,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", user.id)
-    .select("id, email, role, status, full_name, phone, bio, avatar_url, created_at, updated_at")
+    .eq("id", userId)
+    .select(
+      "id, email, role, status, full_name, phone, bio, avatar_url, created_at, updated_at"
+    )
     .single();
 
   if (error) {
@@ -84,13 +113,11 @@ export async function PATCH(request: Request) {
   }
 
   await admin.from("audit_logs").insert({
-    actor_id: user.id,
+    actor_id: userId,
     action: "profile_updated",
     target_type: "profile",
-    target_id: user.id,
-    metadata: {
-      email: user.email,
-    },
+    target_id: userId,
+    metadata: {},
   });
 
   return NextResponse.json({ profile });

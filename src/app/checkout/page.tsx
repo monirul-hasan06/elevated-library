@@ -24,6 +24,9 @@ export default async function CheckoutPage({
   const supabase = createSupabaseServerClient();
   const settings = await getSiteSettings();
 
+  const siteMode = (settings?.site_mode as "normal" | "guest") || "normal";
+  const isGuestMode = siteMode === "guest";
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -45,9 +48,6 @@ export default async function CheckoutPage({
     .eq("status", "active")
     .order("sort_order", { ascending: true });
 
-  const siteMode = (settings?.site_mode as "normal" | "guest") || "normal";
-  const isGuestMode = siteMode === "guest";
-
   return (
     <main className="container-page py-12">
       <div className="mb-8">
@@ -62,13 +62,12 @@ export default async function CheckoutPage({
 
         {isGuestMode ? (
           <p className="mt-2 text-sm text-slate-500">
-            Guest mode is active. Continue with name, email, payment details,
-            and TrxID.
+            Name, email, payment details এবং TrxID দিয়ে order submit করুন।
           </p>
         ) : (
           <p className="mt-2 text-sm text-slate-500">
-            Choose login checkout for dashboard access, or guest checkout for a
-            secure download link.
+            Choose your preferred checkout option and submit your payment
+            details.
           </p>
         )}
       </div>
@@ -85,15 +84,15 @@ export default async function CheckoutPage({
 
           <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
             {isGuestMode
-              ? "Guest checkout করলে name, email এবং payment details দিয়ে order submit করবেন। Admin verify করলে secure download link পাবেন।"
-              : "Login checkout করলে dashboard access পাবেন, Guest checkout করলে secure link পাবেন।"}
+              ? "Name, email এবং payment details submit করুন। Admin verify করলে secure download link পাবেন।"
+              : "Payment details submit করুন। Admin verification-এর পর download access পাবেন।"}
           </p>
         </aside>
 
         <section className="card p-6 lg:col-span-2">
           <CheckoutForm
             productId={product.id}
-            isLoggedIn={!!user}
+            isLoggedIn={isGuestMode ? false : !!user}
             methods={methods || []}
             siteMode={siteMode}
           />

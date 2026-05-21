@@ -56,11 +56,11 @@ export async function Header({
             FAQ
           </Link>
 
-          {!isGuestMode && profile?.role && profile.role !== "customer" ? (
-            <Link href="/admin" className="hover:text-brand-600">
-              Admin
-            </Link>
-          ) : null}
+          {profile?.role && profile.role !== "customer" ? (
+  <Link href="/admin" className="hover:text-brand-600">
+    Admin
+  </Link>
+) : null}
         </nav>
 
         <div className="flex items-center gap-3">

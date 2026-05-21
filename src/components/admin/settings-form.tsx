@@ -88,6 +88,25 @@ export function SettingsForm({ settings }: { settings: any }) {
         </p>
       </div>
 
+      {/* PWA Install Button Section - Integrated here */}
+      <div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:col-span-2">
+        <label className="flex items-center gap-3 text-sm font-semibold">
+          <input
+            type="checkbox"
+            checked={Boolean(form.pwa_install_enabled)}
+            onChange={(event) =>
+              set("pwa_install_enabled", event.target.checked)
+            }
+          />
+          Show PWA Install Button
+        </label>
+
+        <p className="mt-2 text-xs text-slate-500">
+          Shows an install button at the top of the website. Works on supported
+          browsers. iOS users may need manual Add to Home Screen.
+        </p>
+      </div>
+
       <div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:col-span-2">
         <label className="flex items-center gap-3 text-sm font-semibold">
           <input

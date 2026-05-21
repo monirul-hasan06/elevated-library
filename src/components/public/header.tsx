@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { LanguageThemeControls } from "@/components/public/language-theme-controls";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { PwaInstallButton } from "@/components/public/pwa-install-button";
 
 export async function Header({
   siteName = "Elevated Library",
   siteMode = "normal",
+  pwaInstallEnabled = true,
 }: {
   siteName?: string;
   siteMode?: "normal" | "guest";
+  pwaInstallEnabled?: boolean;
 }) {
   const supabase = createSupabaseServerClient();
 
@@ -65,6 +68,7 @@ export async function Header({
 
         <div className="flex items-center gap-3">
           <LanguageThemeControls />
+          <PwaInstallButton enabled={pwaInstallEnabled} />
 
           {!isGuestMode ? (
             user ? (

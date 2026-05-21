@@ -18,6 +18,8 @@ const ALLOWED_SETTING_KEYS = [
 
   "site_mode",
 
+  "pwa_install_enabled",
+
   "welcome_notice_enabled",
   "welcome_notice_bn",
   "welcome_notice_en",

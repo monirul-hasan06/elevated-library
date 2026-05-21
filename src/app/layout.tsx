@@ -7,6 +7,7 @@ import { Footer } from "@/components/public/footer";
 import { SupportButton } from "@/components/public/support-button";
 import { NoticeBar } from "@/components/public/notice-bar";
 import { getSiteSettings } from "@/lib/db";
+import { PwaRegister } from "@/components/public/pwa-register";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -82,10 +83,12 @@ export default async function RootLayout({
     <html lang="bn" suppressHydrationWarning>
       <body>
         <LanguageThemeProvider>
+          <PwaRegister />
           <NoticeBar notice={welcomeNotice} />
           <Header
   siteName={settings?.site_name || "Elevated Library"}
   siteMode={(settings?.site_mode as "normal" | "guest") || "normal"}
+  pwaInstallEnabled={settings?.pwa_install_enabled ?? true}
 />
           {children}
           <Footer settings={settings as any} />

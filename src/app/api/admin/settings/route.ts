@@ -40,32 +40,28 @@ async function getCurrentAdmin() {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (userError || !user) {
     return { error: "Unauthorized", status: 401 as const };
   }
 
   const admin = createSupabaseAdminClient();
 
-  const { data: profile } = await admin
+  const { data: profile, error: profileError } = await admin
     .from("profiles")
     .select("id, email, role, status")
     .eq("id", user.id)
     .single();
 
-  const allowedRoles = [
-    "owner",
-    "admin",
-    "super_admin",
-    "marketing_manager",
-  ];
+  if (profileError || !profile) {
+    return { error: "Profile not found", status: 403 as const };
+  }
 
-  if (
-    !profile ||
-    profile.status !== "active" ||
-    !allowedRoles.includes(profile.role)
-  ) {
+  const allowedRoles = ["owner", "admin", "super_admin", "marketing_manager"];
+
+  if (profile.status !== "active" || !allowedRoles.includes(profile.role)) {
     return { error: "Forbidden", status: 403 as const };
   }
 
@@ -100,10 +96,7 @@ export async function PATCH(request: Request) {
     cleanPayload.site_mode &&
     !["normal", "guest"].includes(cleanPayload.site_mode)
   ) {
-    return NextResponse.json(
-      { error: "Invalid site mode" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid site mode" }, { status: 400 });
   }
 
   cleanPayload.updated_at = new Date().toISOString();

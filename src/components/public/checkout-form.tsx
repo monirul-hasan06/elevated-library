@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type CheckoutType = "authenticated" | "guest";
+type SiteMode = "normal" | "guest";
 
 type PaymentMethod = {
   id: string;
@@ -18,18 +19,23 @@ type CheckoutFormProps = {
   productId: string;
   isLoggedIn: boolean;
   methods: PaymentMethod[];
+  siteMode?: SiteMode;
 };
 
 export function CheckoutForm({
   productId,
   isLoggedIn,
   methods,
+  siteMode = "normal",
 }: CheckoutFormProps) {
+  const isGuestMode = siteMode === "guest";
+
   const [checkoutType, setCheckoutType] = useState<CheckoutType>(
-    isLoggedIn ? "authenticated" : "guest"
+    isGuestMode ? "guest" : isLoggedIn ? "authenticated" : "guest"
   );
 
   const [guestEmail, setGuestEmail] = useState("");
+  const [guestName, setGuestName] = useState("");
   const [paymentMethodId, setPaymentMethodId] = useState(methods[0]?.id || "");
   const [trxId, setTrxId] = useState("");
   const [senderPhone, setSenderPhone] = useState("");
@@ -39,6 +45,12 @@ export function CheckoutForm({
   const [error, setError] = useState("");
 
   const selected = methods.find((method) => method.id === paymentMethodId);
+
+  useEffect(() => {
+    if (isGuestMode) {
+      setCheckoutType("guest");
+    }
+  }, [isGuestMode]);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,7 +71,7 @@ export function CheckoutForm({
           paymentMethodId,
           trxId,
           senderPhone,
-          ...(checkoutType === "guest" ? { guestEmail } : {}),
+          ...(checkoutType === "guest" ? { guestEmail, guestName } : {}),
         }),
       });
 
@@ -112,58 +124,74 @@ export function CheckoutForm({
 
   return (
     <form onSubmit={submit} className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => setCheckoutType("authenticated")}
-          className={`rounded-2xl border p-4 text-left transition ${
-            checkoutType === "authenticated"
-              ? "border-brand-600 bg-brand-50 dark:bg-brand-950"
-              : "border-slate-200 hover:border-brand-300 dark:border-slate-800"
-          }`}
-        >
-          <b>Login Checkout</b>
+      {!isGuestMode ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setCheckoutType("authenticated")}
+            className={`rounded-2xl border p-4 text-left transition ${
+              checkoutType === "authenticated"
+                ? "border-brand-600 bg-brand-50 dark:bg-brand-950"
+                : "border-slate-200 hover:border-brand-300 dark:border-slate-800"
+            }`}
+          >
+            <b>Login Checkout</b>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Dashboard থেকে PDF পাবেন।
-          </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Dashboard থেকে PDF পাবেন।
+            </p>
 
-          {!isLoggedIn ? (
-            <Link
-              className="mt-3 inline-flex text-sm font-bold text-brand-700"
-              href={`/login?redirect=/checkout?productId=${productId}`}
-            >
-              Login first
-            </Link>
-          ) : null}
-        </button>
+            {!isLoggedIn ? (
+              <Link
+                className="mt-3 inline-flex text-sm font-bold text-brand-700"
+                href={`/login?redirect=/checkout?productId=${productId}`}
+              >
+                Login first
+              </Link>
+            ) : null}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setCheckoutType("guest")}
-          className={`rounded-2xl border p-4 text-left transition ${
-            checkoutType === "guest"
-              ? "border-brand-600 bg-brand-50 dark:bg-brand-950"
-              : "border-slate-200 hover:border-brand-300 dark:border-slate-800"
-          }`}
-        >
-          <b>Guest Checkout</b>
+          <button
+            type="button"
+            onClick={() => setCheckoutType("guest")}
+            className={`rounded-2xl border p-4 text-left transition ${
+              checkoutType === "guest"
+                ? "border-brand-600 bg-brand-50 dark:bg-brand-950"
+                : "border-slate-200 hover:border-brand-300 dark:border-slate-800"
+            }`}
+          >
+            <b>Guest Checkout</b>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Email দিয়ে secure link পাবেন।
-          </p>
-        </button>
-      </div>
+            <p className="mt-1 text-sm text-slate-500">
+              Name + email দিয়ে secure link পাবেন।
+            </p>
+          </button>
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-brand-50 p-4 text-sm text-brand-800 dark:bg-brand-950 dark:text-brand-100">
+          Guest Mode is active. Please continue with guest checkout.
+        </div>
+      )}
 
       {checkoutType === "guest" ? (
-        <input
-          className="input"
-          type="email"
-          required
-          placeholder="Guest email"
-          value={guestEmail}
-          onChange={(event) => setGuestEmail(event.target.value)}
-        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <input
+            className="input"
+            type="email"
+            required
+            placeholder="Guest email"
+            value={guestEmail}
+            onChange={(event) => setGuestEmail(event.target.value)}
+          />
+
+          <input
+            className="input"
+            required
+            placeholder="Your name"
+            value={guestName}
+            onChange={(event) => setGuestName(event.target.value)}
+          />
+        </div>
       ) : null}
 
       <div>

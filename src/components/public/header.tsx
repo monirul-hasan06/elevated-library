@@ -4,8 +4,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function Header({
   siteName = "Elevated Library",
+  siteMode = "normal",
 }: {
   siteName?: string;
+  siteMode?: "normal" | "guest";
 }) {
   const supabase = createSupabaseServerClient();
 
@@ -21,6 +23,8 @@ export async function Header({
         .single()
     : ({ data: null } as any);
 
+  const isGuestMode = siteMode === "guest";
+
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/85">
       <div className="container-page flex h-16 items-center justify-between gap-4">
@@ -35,20 +39,24 @@ export async function Header({
           <Link href="/products" className="hover:text-brand-600">
             PDFs
           </Link>
+
           <Link href="/categories" className="hover:text-brand-600">
             Categories
           </Link>
+
           <Link href="/coming-soon" className="hover:text-brand-600">
             Coming Soon
           </Link>
+
           <Link href="/how-it-works" className="hover:text-brand-600">
             How it Works
           </Link>
+
           <Link href="/faq" className="hover:text-brand-600">
             FAQ
           </Link>
 
-          {profile?.role && profile.role !== "customer" ? (
+          {!isGuestMode && profile?.role && profile.role !== "customer" ? (
             <Link href="/admin" className="hover:text-brand-600">
               Admin
             </Link>
@@ -58,24 +66,29 @@ export async function Header({
         <div className="flex items-center gap-3">
           <LanguageThemeControls />
 
-          {user ? (
-            <>
-              <Link href="/dashboard" className="btn-secondary hidden sm:inline-flex">
-                Dashboard
-              </Link>
+          {!isGuestMode ? (
+            user ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="btn-secondary hidden sm:inline-flex"
+                >
+                  Dashboard
+                </Link>
 
-              <Link
-                href="/logout"
-                className="hidden rounded-xl border border-red-200 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950 sm:inline-flex"
-              >
-                Logout
+                <Link
+                  href="/logout"
+                  className="hidden rounded-xl border border-red-200 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950 sm:inline-flex"
+                >
+                  Logout
+                </Link>
+              </>
+            ) : (
+              <Link href="/login" className="btn-primary hidden sm:inline-flex">
+                Login
               </Link>
-            </>
-          ) : (
-            <Link href="/login" className="btn-primary hidden sm:inline-flex">
-              Login
-            </Link>
-          )}
+            )
+          ) : null}
         </div>
       </div>
     </header>

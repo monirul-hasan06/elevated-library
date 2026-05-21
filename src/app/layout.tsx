@@ -83,7 +83,10 @@ export default async function RootLayout({
       <body>
         <LanguageThemeProvider>
           <NoticeBar notice={welcomeNotice} />
-          <Header siteName={settings?.site_name || "Elevated Library"} />
+          <Header
+  siteName={settings?.site_name || "Elevated Library"}
+  siteMode={(settings?.site_mode as "normal" | "guest") || "normal"}
+/>
           {children}
           <Footer settings={settings as any} />
           <SupportButton settings={settings as any} />

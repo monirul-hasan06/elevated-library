@@ -11,8 +11,11 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text unique,
   display_name text,
+  full_name text,
   phone text,
-  role text not null default 'customer' check (role in ('owner','admin','order_manager','product_manager','payment_manager','support_agent','marketing_manager','viewer','customer')),
+  bio text,
+  avatar_url text,
+  role text not null default 'customer' check (role in ('owner','admin','super_admin','order_manager','product_manager','payment_manager','support_agent','marketing_manager','viewer','customer')),
   status text not null default 'active' check (status in ('active','suspended','banned','archived','deleted')),
   preferred_language text not null default 'bn_mix' check (preferred_language in ('bn_mix','en')),
   preferred_theme text not null default 'light' check (preferred_theme in ('light','dark','system')),
@@ -101,6 +104,7 @@ create table if not exists public.orders (
   trx_id text not null,
   sender_phone text not null,
   guest_email text,
+  guest_name text,
   access_token text unique,
   access_token_encrypted text,
   token_expires_at timestamptz,
@@ -209,6 +213,11 @@ create table if not exists public.site_settings (
   primary_color text default '#6d28d9',
   default_language text default 'bn_mix',
   default_theme text default 'light',
+  site_mode text not null default 'normal' check (site_mode in ('normal','guest')),
+  pwa_install_enabled boolean not null default true,
+  welcome_notice_enabled boolean not null default true,
+  welcome_notice_bn text not null default 'Welcome to Elevated Library!',
+  welcome_notice_en text not null default 'Welcome to Elevated Library!',
   hero_title_bn text default 'Elevated Library থেকে Premium PDF কিনুন',
   hero_title_en text default 'Buy Premium PDFs from Elevated Library',
   hero_subtitle_bn text default 'Mindset, Confidence, Communication, Relationship, Discipline এবং self-growth PDF এক জায়গায়।',
@@ -297,7 +306,7 @@ $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['profiles','categories','products','payment_methods','orders','upcoming_pdfs','faqs','notices'] loop
+  foreach t in array array['profiles','categories','products','payment_methods','orders','upcoming_pdfs','faqs','notices','site_settings'] loop
     execute format('drop trigger if exists set_%I_updated_at on public.%I', t, t);
     execute format('create trigger set_%I_updated_at before update on public.%I for each row execute function public.set_updated_at()', t, t);
   end loop;
@@ -437,7 +446,7 @@ insert into public.faqs (question_bn, answer_bn, question_en, answer_en, categor
 on conflict do nothing;
 
 insert into public.notices (title_bn,message_bn,title_en,message_en,type,position,status) values
-('Welcome to Elevated Library','Welcome to Elevated Library','info','top_bar','active')
+('Welcome to Elevated Library!','','Welcome to Elevated Library!','','info','top_bar','hidden')
 on conflict do nothing;
 
 insert into public.static_pages (slug,title_bn,title_en,body_bn,body_en) values
@@ -445,3 +454,40 @@ insert into public.static_pages (slug,title_bn,title_en,body_bn,body_en) values
 ('privacy','Privacy Policy','Privacy Policy','আমরা order, payment verification এবং support-এর জন্য প্রয়োজনীয় data রাখি।','We keep necessary data for orders, payment verification, and support.'),
 ('refund-policy','Refund Policy','Refund Policy','Manual digital product delivery হওয়ায় refund case-by-case review করা হবে।','Refunds for digital products are reviewed case by case.')
 on conflict (slug) do nothing;
+
+
+-- -----------------------------
+-- Latest safe patches for existing databases
+-- -----------------------------
+alter table public.profiles add column if not exists full_name text;
+alter table public.profiles add column if not exists bio text;
+alter table public.profiles add column if not exists avatar_url text;
+alter table public.orders add column if not exists guest_name text;
+alter table public.site_settings add column if not exists site_mode text not null default 'normal';
+alter table public.site_settings add column if not exists pwa_install_enabled boolean not null default true;
+alter table public.site_settings add column if not exists welcome_notice_enabled boolean not null default true;
+alter table public.site_settings add column if not exists welcome_notice_bn text not null default 'Welcome to Elevated Library!';
+alter table public.site_settings add column if not exists welcome_notice_en text not null default 'Welcome to Elevated Library!';
+
+update public.site_settings
+set
+  site_mode = coalesce(site_mode, 'normal'),
+  pwa_install_enabled = coalesce(pwa_install_enabled, true),
+  welcome_notice_enabled = coalesce(welcome_notice_enabled, true),
+  welcome_notice_bn = coalesce(welcome_notice_bn, 'Welcome to Elevated Library!'),
+  welcome_notice_en = coalesce(welcome_notice_en, 'Welcome to Elevated Library!'),
+  updated_at = now()
+where id = 1;
+
+update public.notices
+set status = 'hidden', updated_at = now()
+where position = 'top_bar'
+  and (title_bn ilike '%Welcome to Elevated Library%' or title_en ilike '%Welcome to Elevated Library%');
+
+
+-- Refresh role/site-mode constraints for existing databases
+alter table public.profiles drop constraint if exists profiles_role_check;
+alter table public.profiles add constraint profiles_role_check check (role in ('owner','admin','super_admin','order_manager','product_manager','payment_manager','support_agent','marketing_manager','viewer','customer'));
+
+alter table public.site_settings drop constraint if exists site_settings_site_mode_check;
+alter table public.site_settings add constraint site_settings_site_mode_check check (site_mode in ('normal','guest'));

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import "./globals.css";
 
 import { LanguageThemeProvider } from "@/components/shared/language-theme-provider";
@@ -6,8 +7,8 @@ import { Header } from "@/components/public/header";
 import { Footer } from "@/components/public/footer";
 import { SupportButton } from "@/components/public/support-button";
 import { NoticeBar } from "@/components/public/notice-bar";
-import { getSiteSettings } from "@/lib/db";
 import { PwaRegister } from "@/components/public/pwa-register";
+import { getSiteSettings } from "@/lib/db";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -62,11 +63,7 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   const settings = await getSiteSettings();
 
   const welcomeNotice = settings?.welcome_notice_enabled
@@ -79,6 +76,8 @@ export default async function RootLayout({
       }
     : null;
 
+  const siteMode = (settings?.site_mode as "normal" | "guest") || "normal";
+
   return (
     <html lang="bn" suppressHydrationWarning>
       <body>
@@ -86,10 +85,10 @@ export default async function RootLayout({
           <PwaRegister />
           <NoticeBar notice={welcomeNotice} />
           <Header
-  siteName={settings?.site_name || "Elevated Library"}
-  siteMode={(settings?.site_mode as "normal" | "guest") || "normal"}
-  pwaInstallEnabled={settings?.pwa_install_enabled ?? true}
-/>
+            siteName={settings?.site_name || "Elevated Library"}
+            siteMode={siteMode}
+            pwaInstallEnabled={settings?.pwa_install_enabled ?? true}
+          />
           {children}
           <Footer settings={settings as any} />
           <SupportButton settings={settings as any} />

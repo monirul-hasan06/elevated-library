@@ -61,7 +61,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   await admin.from("audit_logs").insert({
-    actor_id: staff.user.id,
+    actor_id: staff.userId,
     action: `order_${parsed.data.status}`,
     target_type: "order",
     target_id: params.id

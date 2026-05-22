@@ -17,7 +17,7 @@ export async function PATCH(req: Request, { params }: { params: { resource: stri
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase.from(table).update(body).eq("id", params.id).select("*").single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  await supabase.from("audit_logs").insert({ actor_id: staff.user.id, action: `update_${params.resource}`, target_type: params.resource, target_id: params.id });
+  await supabase.from("audit_logs").insert({ actor_id: staff.userId, action: `update_${params.resource}`, target_type: params.resource, target_id: params.id });
   return NextResponse.json({ data });
 }
 
@@ -27,6 +27,6 @@ export async function DELETE(_req: Request, { params }: { params: { resource: st
   const supabase = createSupabaseAdminClient();
   const { error } = await supabase.from(table).update({ status: "deleted", deleted_at: new Date().toISOString() }).eq("id", params.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  await supabase.from("audit_logs").insert({ actor_id: staff.user.id, action: `delete_${params.resource}`, target_type: params.resource, target_id: params.id });
+  await supabase.from("audit_logs").insert({ actor_id: staff.userId, action: `delete_${params.resource}`, target_type: params.resource, target_id: params.id });
   return NextResponse.json({ success: true });
 }

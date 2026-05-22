@@ -91,6 +91,7 @@ export async function ensureStaffApi() {
 
   return {
     userId,
+    user: { id: userId },
     profile,
   };
 }

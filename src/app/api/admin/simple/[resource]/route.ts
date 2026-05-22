@@ -17,6 +17,6 @@ export async function POST(req: Request, { params }: { params: { resource: strin
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase.from(table).insert(body).select("*").single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  await supabase.from("audit_logs").insert({ actor_id: staff.user.id, action: `create_${params.resource}`, target_type: params.resource, target_id: data.id });
+  await supabase.from("audit_logs").insert({ actor_id: staff.userId, action: `create_${params.resource}`, target_type: params.resource, target_id: data.id });
   return NextResponse.json({ data });
 }

@@ -11,6 +11,6 @@ export async function POST(req: Request){
  const {data,error}=await supabase.from('products').insert(product).select('*').single();
  if(error) return NextResponse.json({error:error.message}, {status:400});
  if(category_ids.length) await supabase.from('product_categories').insert(category_ids.map((category_id:string)=>({product_id:data.id,category_id})));
- await supabase.from('audit_logs').insert({actor_id: staff.user.id, action:'create_product', target_type:'product', target_id:data.id});
+ await supabase.from('audit_logs').insert({actor_id: staff.userId, action:'create_product', target_type:'product', target_id:data.id});
  return NextResponse.json({product:data});
 }

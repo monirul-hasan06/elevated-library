@@ -46,7 +46,7 @@ export function MobileHeaderMenu({
               <Link
                 href="/"
                 onClick={() => setOpen(false)}
-                className="font-black text-brand-700 dark:text-brand-100"
+                className="min-w-0 flex-1 truncate font-black text-brand-700 dark:text-brand-100"
               >
                 {siteName}
               </Link>

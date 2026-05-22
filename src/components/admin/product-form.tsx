@@ -70,7 +70,7 @@ setLoading(false);
     e.preventDefault(); setLoading(true); setMessage("");
     try {
       const url = product ? `/api/admin/products/${product.id}` : "/api/admin/products";
-      const res = await fetch(url, { method: product ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const res = await authFetch(url, { method: product ? "PATCH" : "POST", body: JSON.stringify(form) });
       const json = await res.json(); if (!res.ok) throw new Error(json.error || "Save failed");
       setMessage("Saved successfully."); router.push("/admin/products"); router.refresh();
     } catch (e) { setMessage(e instanceof Error ? e.message : "Something went wrong"); }

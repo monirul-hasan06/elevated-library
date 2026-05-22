@@ -25,5 +25,6 @@ export async function authFetch(
   return fetch(input, {
     ...init,
     headers,
+    credentials: "include",
   });
 }

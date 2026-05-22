@@ -80,7 +80,6 @@ export function Footer({ settings }: { settings?: any }) {
               </>
             ) : null}
 
-            {/* Always visible so owner/admin can login even in guest mode */}
             <Link
               className="block font-bold text-brand-700 hover:underline dark:text-brand-200"
               href="/login"
@@ -94,11 +93,7 @@ export function Footer({ settings }: { settings?: any }) {
           <h3 className="font-black">Support</h3>
 
           <div className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
-            {settings?.owner_email ? (
-              <p>{settings.owner_email}</p>
-            ) : (
-              <p>dev.get.in.touch@gmail.com</p>
-            )}
+            <p>{settings?.owner_email || "dev.get.in.touch@gmail.com"}</p>
 
             {settings?.messenger_url ? (
               <Link

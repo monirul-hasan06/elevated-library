@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type Profile = {
   id: string;
@@ -17,6 +18,7 @@ type Profile = {
 
 export function ProfileForm() {
   const [profile, setProfile] = useState<Profile | null>(null);
+
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
@@ -28,12 +30,33 @@ export function ProfileForm() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  async function getAccessToken() {
+    const supabase = createSupabaseBrowserClient();
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    return session?.access_token || null;
+  }
+
   async function loadProfile() {
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/profile");
+      const token = await getAccessToken();
+
+      if (!token) {
+        throw new Error("Unauthorized. Please login again.");
+      }
+
+      const res = await fetch("/api/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const json = await res.json();
 
       if (!res.ok) {
@@ -60,10 +83,17 @@ export function ProfileForm() {
     setError("");
 
     try {
+      const token = await getAccessToken();
+
+      if (!token) {
+        throw new Error("Unauthorized. Please login again.");
+      }
+
       const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           full_name: fullName,
@@ -188,7 +218,9 @@ export function ProfileForm() {
             />
           ) : (
             <div className="grid h-16 w-16 place-items-center rounded-2xl bg-brand-100 text-xl font-black text-brand-700 dark:bg-brand-950 dark:text-brand-100">
-              {(profile.full_name || profile.email || "U").charAt(0).toUpperCase()}
+              {(profile.full_name || profile.email || "U")
+                .charAt(0)
+                .toUpperCase()}
             </div>
           )}
 

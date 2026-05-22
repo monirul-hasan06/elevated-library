@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { authFetch } from "@/lib/auth-fetch";
 
 export function SettingsForm({ settings }: { settings: any }) {
   const router = useRouter();
@@ -22,7 +23,7 @@ export function SettingsForm({ settings }: { settings: any }) {
     setSaving(true);
 
     try {
-      const res = await fetch("/api/admin/settings", {
+      const res = await authFetch("/api/admin/settings", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

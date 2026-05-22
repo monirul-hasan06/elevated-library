@@ -30,14 +30,24 @@ export function ProfileForm() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  async function getAccessToken() {
-    const supabase = createSupabaseBrowserClient();
+  async function getAuthHeaders() {
+    const headers = new Headers();
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    try {
+      const supabase = createSupabaseBrowserClient();
 
-    return session?.access_token || null;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session?.access_token) {
+        headers.set("Authorization", `Bearer ${session.access_token}`);
+      }
+    } catch {
+      // If browser session is not available, API will still try cookie session.
+    }
+
+    return headers;
   }
 
   async function loadProfile() {
@@ -45,16 +55,12 @@ export function ProfileForm() {
     setError("");
 
     try {
-      const token = await getAccessToken();
-
-      if (!token) {
-        throw new Error("Unauthorized. Please login again.");
-      }
+      const headers = await getAuthHeaders();
 
       const res = await fetch("/api/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        method: "GET",
+        headers,
+        credentials: "include",
       });
 
       const json = await res.json();
@@ -83,18 +89,13 @@ export function ProfileForm() {
     setError("");
 
     try {
-      const token = await getAccessToken();
-
-      if (!token) {
-        throw new Error("Unauthorized. Please login again.");
-      }
+      const headers = await getAuthHeaders();
+      headers.set("Content-Type", "application/json");
 
       const res = await fetch("/api/profile", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
+        credentials: "include",
         body: JSON.stringify({
           full_name: fullName,
           phone,
@@ -133,7 +134,15 @@ export function ProfileForm() {
   if (!profile) {
     return (
       <div className="rounded-2xl bg-red-50 p-5 text-red-700 dark:bg-red-950 dark:text-red-100">
-        {error || "Profile not found"}
+        <p>{error || "Profile not found"}</p>
+
+        <button
+          type="button"
+          onClick={loadProfile}
+          className="mt-4 rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

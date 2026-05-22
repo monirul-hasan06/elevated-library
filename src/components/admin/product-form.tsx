@@ -3,6 +3,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { slugify } from "@/lib/utils";
+import { authFetch } from "@/lib/auth-fetch";
 
 export function ProductForm({ product, categories, selectedCategories = [] }: { product?: any; categories: any[]; selectedCategories?: string[] }) {
   const router = useRouter();
@@ -37,7 +38,7 @@ export function ProductForm({ product, categories, selectedCategories = [] }: { 
 
   async function uploadPdf(file: File) {
     setLoading(true); setMessage("Uploading PDF...");
-    const res = await fetch("/api/admin/upload-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileName: file.name, contentType: file.type || "application/pdf", prefix: "pdfs" }) });
+    const res = await authFetch("/api/admin/upload-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileName: file.name, contentType: file.type || "application/pdf", prefix: "pdfs" }) });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || "Upload URL failed");
     if (json.provider === "supabase") {
